@@ -1,0 +1,131 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NAME_LENGTH 30
+
+typedef struct Player {
+    char name[MAX_NAME_LENGTH];
+    int goals;
+    struct Player* next;
+} Player;
+
+Player* stackTop = NULL;
+Player* queueFront = NULL;
+Player* queueRear = NULL;
+
+Player* createPlayer(char* name, int goals) {
+    Player* newPlayer = malloc(sizeof(Player));
+    strcpy(newPlayer->name, name);
+    newPlayer->goals = goals;
+    newPlayer->next = NULL;
+    return newPlayer;
+}
+
+void addToStack(char* name, int goals) {
+    Player* newPlayer = createPlayer(name, goals);
+    newPlayer->next = stackTop;
+    stackTop = newPlayer;
+}
+
+void removeFromStack() {
+    if (!stackTop) {
+        printf("No players left in the stack!\n");
+        return;
+    }
+    Player* temp = stackTop;
+    printf("Removed from stack: %s (%d goals)\n", temp->name, temp->goals);
+    stackTop = stackTop->next;
+    free(temp);
+}
+
+void addToQueue(char* name, int goals) {
+    Player* newPlayer = createPlayer(name, goals);
+    if (!queueRear) {
+        queueFront = queueRear = newPlayer;
+    } else {
+        queueRear->next = newPlayer;
+        queueRear = newPlayer;
+    }
+}
+
+void removeFromQueue() {
+    if (!queueFront) {
+        printf("Queue is empty!\n");
+        return;
+    }
+    Player* temp = queueFront;
+    printf("Removed from queue: %s (%d goals)\n", temp->name, temp->goals);
+    queueFront = queueFront->next;
+    if (!queueFront) queueRear = NULL;
+    free(temp);
+}
+
+void showStack() {
+    Player* temp = stackTop;
+    printf("\nStack of players (last added on top):\n");
+    if (!temp) {
+        printf("   [empty]\n");
+        return;
+    }
+    while (temp) {
+        printf("   %s - %d goals\n", temp->name, temp->goals);
+        temp = temp->next;
+    }
+}
+
+void showQueue() {
+    Player* temp = queueFront;
+    printf("\nQueue of players (first added in front):\n");
+    if (!temp) {
+        printf("   [empty]\n");
+        return;
+    }
+    while (temp) {
+        printf("   %s - %d goals\n", temp->name, temp->goals);
+        temp = temp->next;
+    }
+}
+
+int main() {
+    char name[MAX_NAME_LENGTH];
+    int goals, choice;
+    printf("Welcome to Player Manager\n");
+
+    while (1) {
+        printf("\nMenu:\n");
+        printf("1. Add player\n");
+        printf("2. Remove last added player (stack)\n");
+        printf("3. Remove first added player (queue)\n");
+        printf("4. Show stack\n");
+        printf("5. Show queue\n");
+        printf("6. Exit\n");
+        printf("Your choice: ");
+        scanf("%d", &choice);
+        getchar();
+
+        if (choice == 1) {
+            printf("Enter player name: ");
+            fgets(name, MAX_NAME_LENGTH, stdin);
+            name[strcspn(name, "\n")] = 0;
+            printf("Goals scored: ");
+            scanf("%d", &goals);
+            getchar();
+            addToStack(name, goals);
+            addToQueue(name, goals);
+            printf("Player '%s' with %d goals added!\n", name, goals);
+        }
+        else if (choice == 2) removeFromStack();
+        else if (choice == 3) removeFromQueue();
+        else if (choice == 4) showStack();
+        else if (choice == 5) showQueue();
+        else if (choice == 6) {
+            printf("Exiting... Thanks for using Player Manager!\n");
+            break;
+        }
+        else {
+            printf("Invalid choice, try again!\n");
+        }
+    }
+    return 0;
+}
